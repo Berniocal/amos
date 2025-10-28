@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amos-v3';
+const CACHE_NAME = 'amos-v4';
 const ASSETS = [
   './',
   './index.html',
