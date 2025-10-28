@@ -66,15 +66,25 @@ body.fullscreen .board{height:100vh !important;transition:height .2s ease}
 }
 .modal-body{flex:1; background:#0b1220}
 .modal-body iframe{width:100%; height:100%; border:0}
+/* Dřevěný vzhled kostek */
+.die.wood{
+  background-image:url("./icons/wood-texture.jpg");
+  background-size:cover;
+  background-position:center;
+  color:#111;                 /* černé písmo pro kontrast na světlém dřevě */
+  border:1px solid #0003;
+}
+ 
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="topbar">
-    <button id="newGameBtn" class="btn">Nová hra</button>
-    <button id="rulesBtn"   class="btn">Pravidla</button>
-    <div id="seedBox" class="code-box" contenteditable="true" title="Klikni a uprav kód"></div>
-  </div>
+<div class="topbar">
+  <button id="newGameBtn" class="btn">Nová hra</button>
+  <button id="rulesBtn"   class="btn">Pravidla</button>
+  <button id="styleBtn"   class="btn">Styl: moderní</button>
+  <div id="seedBox" class="code-box" contenteditable="true" title="Klikni a uprav kód"></div>
+</div>
 
   <div class="controls" id="controls">
     <label>Velikost kostky:
@@ -150,7 +160,21 @@ const newGameBtn = document.getElementById("newGameBtn");
 const rulesBtn   = document.getElementById("rulesBtn");
 const rulesModal = document.getElementById("rulesModal");
 const rulesClose = document.getElementById("rulesClose");
+/* ==== přepínač stylu kostek ==== */
+const styleBtn = document.getElementById("styleBtn");
+let wooden = localStorage.getItem("amos_wood") === "1";
 
+function applyStyle(){
+  dice.forEach(d => d.el.classList.toggle("wood", wooden));
+  if (styleBtn) styleBtn.textContent = wooden ? "Styl: dřevěný" : "Styl: moderní";
+}
+if (styleBtn){
+  styleBtn.addEventListener("click", () => {
+    wooden = !wooden;
+    localStorage.setItem("amos_wood", wooden ? "1" : "0");
+    applyStyle();
+  });
+}
 /* ==== stav ==== */
 let dice=[], seed=generateSeed();
 
@@ -224,6 +248,7 @@ function createDie(i,rand){
   const el=document.createElement("div"); el.className="die";
   const s={el,set:DICE_SETS[i],faceIdx:Math.floor(rand()*6),x:0,y:0,dragging:false,pointerId:null,offX:0,offY:0};
   el.innerHTML=faceHTML(s.set[s.faceIdx]);
+  if (wooden) el.classList.add("wood");
   el.addEventListener("pointerdown",(e)=>{
     s.dragging=true; s.pointerId=e.pointerId; el.setPointerCapture(e.pointerId);
     const r=el.getBoundingClientRect(); s.offX=e.clientX-r.left; s.offY=e.clientY-r.top;
@@ -327,9 +352,11 @@ seedBox.addEventListener("keydown", e=>{
 });
 
 /* ==== Start ==== */
-newGameBtn.addEventListener("click", ()=> newGame());
+newGameBtn.addEventListener("click", ()=> { newGame(); applyStyle(); });
 syncSizes();
 newGame(seed);
+applyStyle();
+  
 
 /* Úmyslně nic neděláme na resize/orientationchange – pozice zůstávají */
 window.addEventListener("resize", ()=>{});
